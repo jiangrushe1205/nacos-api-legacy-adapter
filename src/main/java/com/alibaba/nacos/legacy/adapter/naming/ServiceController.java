@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos.legacy.adapter.naming;
 
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.CommonParams;
@@ -47,9 +48,9 @@ import com.alibaba.nacos.naming.selector.NoneSelector;
 import com.alibaba.nacos.naming.selector.SelectorManager;
 import com.alibaba.nacos.naming.utils.ServiceUtil;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,7 +60,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.HashMap;
@@ -135,9 +135,8 @@ public class ServiceController {
             @RequestParam String serviceName) throws Exception {
         
         getServiceOperator().delete(namespaceId, serviceName);
-        NotifyCenter.publishEvent(
-                new DeregisterServiceTraceEvent(System.currentTimeMillis(), namespaceId,
-                        NamingUtils.getGroupName(serviceName), NamingUtils.getServiceName(serviceName)));
+        NotifyCenter.publishEvent(new DeregisterServiceTraceEvent(System.currentTimeMillis(), namespaceId,
+                NamingUtils.getGroupName(serviceName), NamingUtils.getServiceName(serviceName)));
         return "ok";
     }
     

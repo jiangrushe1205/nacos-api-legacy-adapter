@@ -24,7 +24,7 @@ import com.alibaba.nacos.config.server.paramcheck.ConfigDefaultHttpParamExtracto
 import com.alibaba.nacos.config.server.service.capacity.CapacityService;
 import com.alibaba.nacos.core.controller.compatibility.Compatibility;
 import com.alibaba.nacos.core.paramcheck.ExtractorManager;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
+import com.alibaba.nacos.api.common.ApiType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos.legacy.adapter.naming;
 
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.CommonParams;
@@ -36,9 +37,9 @@ import com.alibaba.nacos.naming.monitor.MetricsMonitor;
 import com.alibaba.nacos.naming.paramcheck.NamingDefaultHttpParamExtractor;
 import com.alibaba.nacos.naming.web.CanDistro;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
 import com.alibaba.nacos.sys.env.EnvUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +47,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,12 +107,12 @@ public class HealthController {
         boolean health = ConvertUtils.toBoolean(healthyString);
         String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME);
         String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID);
-        String clusterName = WebUtils
-                .optional(request, CommonParams.CLUSTER_NAME, UtilsAndCommons.DEFAULT_CLUSTER_NAME);
+        String clusterName = WebUtils.optional(request, CommonParams.CLUSTER_NAME,
+                UtilsAndCommons.DEFAULT_CLUSTER_NAME);
         String ip = WebUtils.required(request, IP_KEY);
         int port = Integer.parseInt(WebUtils.required(request, PORT_KEY));
-        getHealthOperator()
-                .updateHealthStatusForPersistentInstance(namespaceId, serviceName, clusterName, ip, port, health);
+        getHealthOperator().updateHealthStatusForPersistentInstance(namespaceId, serviceName, clusterName, ip, port,
+                health);
         return ResponseEntity.ok("ok");
     }
     

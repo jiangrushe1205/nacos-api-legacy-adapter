@@ -23,7 +23,7 @@ import com.alibaba.nacos.console.paramcheck.ConsoleDefaultHttpParamExtractor;
 import com.alibaba.nacos.core.controller.compatibility.Compatibility;
 import com.alibaba.nacos.core.paramcheck.ExtractorManager;
 import com.alibaba.nacos.core.service.NacosServerStateService;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.sys.env.EnvUtil;
 import com.alibaba.nacos.sys.utils.DiskUtils;
 import org.springframework.web.bind.annotation.GetMapping;

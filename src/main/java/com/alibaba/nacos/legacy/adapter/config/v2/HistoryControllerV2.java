@@ -34,7 +34,7 @@ import com.alibaba.nacos.api.model.Page;
 import com.alibaba.nacos.config.server.service.HistoryService;
 import com.alibaba.nacos.config.server.utils.ParamUtils;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.plugin.auth.constant.SignType;
 import com.alibaba.nacos.plugin.auth.exception.AccessException;
 import org.springframework.dao.DataAccessException;

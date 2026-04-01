@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos.legacy.adapter.naming;
 
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.model.Page;
@@ -33,7 +34,6 @@ import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.paramcheck.NamingDefaultHttpParamExtractor;
 import com.alibaba.nacos.naming.utils.ServiceUtil;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,7 +73,8 @@ public class CatalogController {
             String serviceName) throws NacosException {
         String serviceNameWithoutGroup = NamingUtils.getServiceName(serviceName);
         String groupName = NamingUtils.getGroupName(serviceName);
-        ServiceDetailInfo result = judgeCatalogService().getServiceDetail(namespaceId, groupName, serviceNameWithoutGroup);
+        ServiceDetailInfo result = judgeCatalogService().getServiceDetail(namespaceId, groupName,
+                serviceNameWithoutGroup);
         return ServiceUtil.transferToConsoleResult(result);
     }
     
@@ -145,8 +146,8 @@ public class CatalogController {
             @RequestParam(required = false) boolean hasIpCount) throws NacosException {
         
         if (withInstances) {
-            Page<ServiceDetailInfo> serviceDetailInfo = judgeCatalogService().pageListServiceDetail(
-                    namespaceId, groupName, serviceName, pageNo, pageSize);
+            Page<ServiceDetailInfo> serviceDetailInfo = judgeCatalogService().pageListServiceDetail(namespaceId,
+                    groupName, serviceName, pageNo, pageSize);
             List<com.alibaba.nacos.naming.pojo.ServiceDetailInfo> result = new LinkedList<>();
             for (ServiceDetailInfo each : serviceDetailInfo.getPageItems()) {
                 result.add(com.alibaba.nacos.naming.pojo.ServiceDetailInfo.from(each));

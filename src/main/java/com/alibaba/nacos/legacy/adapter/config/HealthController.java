@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos.legacy.adapter.config;
 
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.config.server.constant.Constants;
 import com.alibaba.nacos.config.server.paramcheck.ConfigDefaultHttpParamExtractor;
 import com.alibaba.nacos.core.cluster.MemberLookup;
@@ -24,8 +25,6 @@ import com.alibaba.nacos.core.controller.compatibility.Compatibility;
 import com.alibaba.nacos.core.paramcheck.ExtractorManager;
 import com.alibaba.nacos.persistence.datasource.DataSourceService;
 import com.alibaba.nacos.persistence.datasource.DynamicDataSource;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
-import com.alibaba.nacos.sys.utils.InetUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,9 +69,9 @@ public class HealthController {
         StringBuilder sb = new StringBuilder();
         String dbStatus = dataSourceService.getHealth();
         boolean addressServerHealthy = isAddressServerHealthy();
-        if (dbStatus.contains(HEALTH_UP) && addressServerHealthy && ServerMemberManager.isInIpList()) {
+        if (dbStatus.contains(HEALTH_UP) && addressServerHealthy) {
             sb.append(HEALTH_UP);
-        } else if (dbStatus.contains(HEALTH_WARN) && addressServerHealthy && ServerMemberManager.isInIpList()) {
+        } else if (dbStatus.contains(HEALTH_WARN) && addressServerHealthy) {
             sb.append("WARN:");
             sb.append("slave db (").append(dbStatus.split(":")[1]).append(") down. ");
         } else {
@@ -80,16 +79,12 @@ public class HealthController {
             if (dbStatus.contains(HEALTH_DOWN)) {
                 sb.append("master db (").append(dbStatus.split(":")[1]).append(") down. ");
             }
-        
+            
             if (!addressServerHealthy) {
                 sb.append("address server down. ");
             }
-            if (!ServerMemberManager.isInIpList()) {
-                sb.append("server ip ").append(InetUtils.getSelfIP())
-                        .append(" is not in the serverList of address server. ");
-            }
         }
-    
+        
         return sb.toString();
     }
     
@@ -108,12 +103,12 @@ public class HealthController {
         if (info == null) {
             return false;
         }
-    
+        
         final Object addressServerHealth = info.get("addressServerHealth");
         if (addressServerHealth == null) {
             return false;
         }
-    
+        
         return Boolean.parseBoolean(addressServerHealth.toString());
     }
     

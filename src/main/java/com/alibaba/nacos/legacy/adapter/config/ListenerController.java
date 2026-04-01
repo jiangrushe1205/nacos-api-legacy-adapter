@@ -28,7 +28,7 @@ import com.alibaba.nacos.config.server.utils.GroupKey2;
 import com.alibaba.nacos.core.controller.compatibility.Compatibility;
 import com.alibaba.nacos.core.paramcheck.ExtractorManager;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.plugin.auth.constant.SignType;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;

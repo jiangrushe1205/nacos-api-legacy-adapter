@@ -17,6 +17,7 @@
 package com.alibaba.nacos.legacy.adapter.naming.v2;
 
 import com.alibaba.nacos.api.annotation.NacosApi;
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.model.v2.Result;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
@@ -29,7 +30,6 @@ import com.alibaba.nacos.naming.model.form.UpdateHealthForm;
 import com.alibaba.nacos.naming.paramcheck.NamingDefaultHttpParamExtractor;
 import com.alibaba.nacos.naming.web.CanDistro;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * HealthControllerV2.
+ *
  * @author dongyafei
  * @date 2022/9/15
  */
@@ -62,9 +63,9 @@ public class HealthControllerV2 {
     @Compatibility(apiType = ApiType.ADMIN_API, alternatives = "PUT ${contextPath:nacos}/v3/admin/ns/health")
     public Result<String> update(UpdateHealthForm updateHealthForm) throws NacosException {
         updateHealthForm.validate();
-        healthOperatorV2.updateHealthStatusForPersistentInstance(updateHealthForm.getNamespaceId(), buildCompositeServiceName(updateHealthForm),
-                updateHealthForm.getClusterName(), updateHealthForm.getIp(), updateHealthForm.getPort(),
-                updateHealthForm.getHealthy());
+        healthOperatorV2.updateHealthStatusForPersistentInstance(updateHealthForm.getNamespaceId(),
+                buildCompositeServiceName(updateHealthForm), updateHealthForm.getClusterName(),
+                updateHealthForm.getIp(), updateHealthForm.getPort(), updateHealthForm.getHealthy());
         return Result.success("ok");
     }
     

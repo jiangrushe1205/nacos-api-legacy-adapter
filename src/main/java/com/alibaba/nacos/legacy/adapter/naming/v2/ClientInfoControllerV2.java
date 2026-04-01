@@ -17,6 +17,7 @@
 package com.alibaba.nacos.legacy.adapter.naming.v2;
 
 import com.alibaba.nacos.api.annotation.NacosApi;
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.api.NacosApiException;
 import com.alibaba.nacos.api.model.v2.ErrorCode;
@@ -31,7 +32,6 @@ import com.alibaba.nacos.naming.core.v2.client.manager.ClientManagerDelegate;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.paramcheck.NamingDefaultHttpParamExtractor;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -81,7 +81,8 @@ public class ClientInfoControllerV2 {
     @GetMapping()
     @Secured(action = ActionTypes.READ, resource = "nacos/admin")
     @Compatibility(apiType = ApiType.ADMIN_API, alternatives = "GET ${contextPath:nacos}/v3/admin/ns/client")
-    public Result<ClientSummaryInfo> getClientDetail(@RequestParam("clientId") String clientId) throws NacosApiException {
+    public Result<ClientSummaryInfo> getClientDetail(@RequestParam("clientId") String clientId)
+            throws NacosApiException {
         checkClientId(clientId);
         return Result.success(clientServiceV2Impl.getClientDetail(clientId));
     }
@@ -136,7 +137,8 @@ public class ClientInfoControllerV2 {
             @RequestParam(value = "ephemeral", required = false, defaultValue = "true") Boolean ephemeral,
             @RequestParam("serviceName") String serviceName, @RequestParam(value = "ip", required = false) String ip,
             @RequestParam(value = "port", required = false) Integer port) {
-        return Result.success(clientServiceV2Impl.getPublishedClientList(namespaceId, groupName, serviceName, ephemeral, ip, port));
+        return Result.success(
+                clientServiceV2Impl.getPublishedClientList(namespaceId, groupName, serviceName, ephemeral, ip, port));
     }
     
     /**
@@ -159,7 +161,8 @@ public class ClientInfoControllerV2 {
             @RequestParam(value = "ephemeral", required = false, defaultValue = "true") Boolean ephemeral,
             @RequestParam("serviceName") String serviceName, @RequestParam(value = "ip", required = false) String ip,
             @RequestParam(value = "port", required = false) Integer port) {
-        return Result.success(clientServiceV2Impl.getSubscribeClientList(namespaceId, groupName, serviceName, ephemeral, ip, port));
+        return Result.success(
+                clientServiceV2Impl.getSubscribeClientList(namespaceId, groupName, serviceName, ephemeral, ip, port));
     }
     
     private void checkClientId(String clientId) throws NacosApiException {

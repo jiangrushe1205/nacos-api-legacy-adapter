@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos.legacy.adapter.naming;
 
+import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.auth.annotation.Secured;
 import com.alibaba.nacos.common.utils.InternetAddressUtil;
 import com.alibaba.nacos.common.utils.JacksonUtils;
@@ -37,16 +38,15 @@ import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.monitor.MetricsMonitor;
 import com.alibaba.nacos.naming.paramcheck.NamingDefaultHttpParamExtractor;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
-import com.alibaba.nacos.plugin.auth.constant.ApiType;
 import com.alibaba.nacos.sys.env.EnvUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collection;
 
 /**
@@ -72,8 +72,7 @@ public class OperatorController {
     private final ClientManager clientManager;
     
     public OperatorController(SwitchManager switchManager, ServerStatusManager serverStatusManager,
-            SwitchDomain switchDomain, DistroMapper distroMapper,
-            ClientManagerDelegate clientManager) {
+            SwitchDomain switchDomain, DistroMapper distroMapper, ClientManagerDelegate clientManager) {
         this.switchManager = switchManager;
         this.serverStatusManager = serverStatusManager;
         this.switchDomain = switchDomain;
