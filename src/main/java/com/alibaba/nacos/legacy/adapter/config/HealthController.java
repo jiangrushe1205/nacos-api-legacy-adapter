@@ -67,7 +67,7 @@ public class HealthController {
     public String getHealth() {
         // TODO UP DOWN WARN
         StringBuilder sb = new StringBuilder();
-        String dbStatus = dataSourceService.getHealth();
+        String dbStatus = getDataSourceHealth();
         boolean addressServerHealthy = isAddressServerHealthy();
         if (dbStatus.contains(HEALTH_UP) && addressServerHealthy) {
             sb.append(HEALTH_UP);
@@ -77,7 +77,8 @@ public class HealthController {
         } else {
             sb.append("DOWN:");
             if (dbStatus.contains(HEALTH_DOWN)) {
-                sb.append("master db (").append(dbStatus.split(":")[1]).append(") down. ");
+                String[] parts = dbStatus.split(":");
+                sb.append("master db (").append(parts.length > 1 ? parts[1] : "master").append(") down. ");
             }
             
             if (!addressServerHealthy) {
@@ -86,6 +87,18 @@ public class HealthController {
         }
         
         return sb.toString();
+    }
+    
+    private String getDataSourceHealth() {
+        if (dataSourceService == null) {
+            return HEALTH_DOWN;
+        }
+        try {
+            java.lang.reflect.Method method = dataSourceService.getClass().getMethod("getHealth");
+            return (String) method.invoke(dataSourceService);
+        } catch (Throwable ignored) {
+            return dataSourceService.checkMasterWritable() ? HEALTH_UP : HEALTH_DOWN;
+        }
     }
     
     private boolean isAddressServerHealthy() {

@@ -27,6 +27,7 @@ import com.alibaba.nacos.common.utils.Pair;
 import com.alibaba.nacos.common.utils.StringUtils;
 import com.alibaba.nacos.config.server.constant.Constants;
 import com.alibaba.nacos.config.server.constant.ParametersField;
+import com.alibaba.nacos.api.config.model.ConfigListenerInfo;
 import com.alibaba.nacos.config.server.controller.ConfigServletInner;
 import com.alibaba.nacos.config.server.controller.parameters.SameNamespaceCloneConfigBean;
 import com.alibaba.nacos.config.server.enums.ApiVersionEnum;
@@ -34,14 +35,12 @@ import com.alibaba.nacos.config.server.exception.ConfigAlreadyExistsException;
 import com.alibaba.nacos.config.server.model.ConfigAdvanceInfo;
 import com.alibaba.nacos.config.server.model.ConfigAllInfo;
 import com.alibaba.nacos.config.server.model.ConfigInfo;
-import com.alibaba.nacos.config.server.model.ConfigInfo4Beta;
 import com.alibaba.nacos.config.server.model.ConfigInfoGrayWrapper;
 import com.alibaba.nacos.config.server.model.ConfigListenState;
 import com.alibaba.nacos.config.server.model.ConfigMetadata;
 import com.alibaba.nacos.config.server.model.ConfigRequestInfo;
 import com.alibaba.nacos.config.server.model.GroupkeyListenserStatus;
 import com.alibaba.nacos.api.config.model.SameConfigPolicy;
-import com.alibaba.nacos.config.server.model.SampleResult;
 import com.alibaba.nacos.config.server.model.form.ConfigForm;
 import com.alibaba.nacos.config.server.model.gray.BetaGrayRule;
 import com.alibaba.nacos.config.server.model.gray.GrayRuleManager;
@@ -51,7 +50,7 @@ import com.alibaba.nacos.config.server.paramcheck.ConfigDefaultHttpParamExtracto
 import com.alibaba.nacos.config.server.paramcheck.ConfigListenerHttpParamExtractor;
 import com.alibaba.nacos.config.server.result.code.ResultCodeEnum;
 import com.alibaba.nacos.config.server.service.ConfigOperationService;
-import com.alibaba.nacos.config.server.service.ConfigSubService;
+import com.alibaba.nacos.config.server.service.listener.ConfigListenerStateDelegate;
 import com.alibaba.nacos.config.server.service.repository.ConfigInfoGrayPersistService;
 import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
 import com.alibaba.nacos.config.server.utils.GroupKey;
@@ -131,15 +130,15 @@ public class ConfigController {
     
     private final ConfigOperationService configOperationService;
     
-    private final ConfigSubService configSubService;
+    private final ConfigListenerStateDelegate configListenerStateDelegate;
     
     public ConfigController(ConfigServletInner inner, ConfigOperationService configOperationService,
-            ConfigSubService configSubService, ConfigInfoPersistService configInfoPersistService,
+            ConfigListenerStateDelegate configListenerStateDelegate, ConfigInfoPersistService configInfoPersistService,
             NamespacePersistService namespacePersistService,
             ConfigInfoGrayPersistService configInfoGrayPersistService) {
         this.inner = inner;
         this.configOperationService = configOperationService;
-        this.configSubService = configSubService;
+        this.configListenerStateDelegate = configListenerStateDelegate;
         this.configInfoPersistService = configInfoPersistService;
         this.namespacePersistService = namespacePersistService;
         this.configInfoGrayPersistService = configInfoGrayPersistService;
@@ -216,7 +215,6 @@ public class ConfigController {
         configRequestInfo.setRequestIpApp(RequestUtil.getAppName(request));
         configRequestInfo.setBetaIps(request.getHeader("betaIps"));
         configRequestInfo.setCasMd5(request.getHeader("casMd5"));
-        configRequestInfo.setNamespaceTransferred(namespaceTransferred);
         
         boolean publishResult = false;
         try {
@@ -391,11 +389,11 @@ public class ConfigController {
             @RequestParam(value = "sampleTime", required = false, defaultValue = "1") int sampleTime) throws Exception {
         group = StringUtils.isBlank(group) ? Constants.DEFAULT_GROUP : group;
         tenant = NamespaceUtil.processNamespaceParameter(tenant);
-        SampleResult collectSampleResult = configSubService.getCollectSampleResult(dataId, group, tenant, sampleTime);
+        ConfigListenerInfo listenerInfo = configListenerStateDelegate.getListenerState(dataId, group, tenant, false);
         GroupkeyListenserStatus gls = new GroupkeyListenserStatus();
         gls.setCollectStatus(200);
-        if (collectSampleResult.getLisentersGroupkeyStatus() != null) {
-            gls.setLisentersGroupkeyStatus(collectSampleResult.getLisentersGroupkeyStatus());
+        if (listenerInfo != null && listenerInfo.getListenersStatus() != null) {
+            gls.setLisentersGroupkeyStatus(listenerInfo.getListenersStatus());
         }
         return gls;
     }
@@ -960,7 +958,6 @@ public class ConfigController {
             ConfigAllInfo configAllInfo = configAllInfoList.get(i);
             ConfigForm configForm = transferToConfigForm(configAllInfo, srcUser, targetNamespaceId);
             ConfigRequestInfo configRequestInfo = transferToConfigRequestInfo(request);
-            configRequestInfo.setNamespaceTransferred(namespaceTransferred);
             if (sameConfigPolicy != SameConfigPolicy.OVERWRITE) {
                 configRequestInfo.setUpdateForExist(false);
             }

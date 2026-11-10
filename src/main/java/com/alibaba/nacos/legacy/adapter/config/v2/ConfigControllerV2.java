@@ -151,7 +151,6 @@ public class ConfigControllerV2 {
         configRequestInfo.setRequestIpApp(RequestUtil.getAppName(request));
         configRequestInfo.setBetaIps(request.getHeader("betaIps"));
         configRequestInfo.setCasMd5(request.getHeader("casMd5"));
-        configRequestInfo.setNamespaceTransferred(namespaceTransferred);
         
         return Result.success(configOperationService.publishConfig(configForm, configRequestInfo, encryptedDataKeyFinal));
     }

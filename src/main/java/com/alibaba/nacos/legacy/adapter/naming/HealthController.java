@@ -51,11 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alibaba.nacos.naming.constants.RequestConstant.HEALTHY_KEY;
-import static com.alibaba.nacos.naming.constants.RequestConstant.IP_KEY;
-import static com.alibaba.nacos.naming.constants.RequestConstant.PORT_KEY;
-import static com.alibaba.nacos.naming.constants.RequestConstant.VALID_KEY;
-
 /**
  * Health status related operation controller.
  *
@@ -68,6 +63,14 @@ import static com.alibaba.nacos.naming.constants.RequestConstant.VALID_KEY;
 @RequestMapping(UtilsAndCommons.NACOS_NAMING_CONTEXT + UtilsAndCommons.NACOS_NAMING_HEALTH_CONTEXT)
 @ExtractorManager.Extractor(httpExtractor = NamingDefaultHttpParamExtractor.class)
 public class HealthController {
+
+    private static final String HEALTHY_KEY = "healthy";
+
+    private static final String VALID_KEY = "valid";
+
+    private static final String IP_KEY = "ip";
+
+    private static final String PORT_KEY = "port";
     
     @Autowired
     private HealthOperatorV2Impl healthOperatorV2;

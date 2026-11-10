@@ -16,14 +16,14 @@
 
 package com.alibaba.nacos.legacy.adapter.config;
 
+import com.alibaba.nacos.api.config.model.ConfigListenerInfo;
 import com.alibaba.nacos.auth.annotation.Secured;
 import com.alibaba.nacos.common.utils.NamespaceUtil;
 import com.alibaba.nacos.common.utils.StringUtils;
 import com.alibaba.nacos.config.server.constant.Constants;
 import com.alibaba.nacos.config.server.model.GroupkeyListenserStatus;
-import com.alibaba.nacos.config.server.model.SampleResult;
 import com.alibaba.nacos.config.server.paramcheck.ConfigDefaultHttpParamExtractor;
-import com.alibaba.nacos.config.server.service.ConfigSubService;
+import com.alibaba.nacos.config.server.service.listener.ConfigListenerStateDelegate;
 import com.alibaba.nacos.config.server.utils.GroupKey2;
 import com.alibaba.nacos.core.controller.compatibility.Compatibility;
 import com.alibaba.nacos.core.paramcheck.ExtractorManager;
@@ -50,10 +50,10 @@ import java.util.Map;
 @ExtractorManager.Extractor(httpExtractor = ConfigDefaultHttpParamExtractor.class)
 public class ListenerController {
     
-    private final ConfigSubService configSubService;
+    private final ConfigListenerStateDelegate configListenerStateDelegate;
     
-    public ListenerController(ConfigSubService configSubService) {
-        this.configSubService = configSubService;
+    public ListenerController(ConfigListenerStateDelegate configListenerStateDelegate) {
+        this.configListenerStateDelegate = configListenerStateDelegate;
     }
     
     /**
@@ -66,15 +66,15 @@ public class ListenerController {
             @RequestParam(value = "all", required = false) boolean all,
             @RequestParam(value = "tenant", required = false) String tenant,
             @RequestParam(value = "sampleTime", required = false, defaultValue = "1") int sampleTime, ModelMap modelMap) {
-        SampleResult collectSampleResult = configSubService.getCollectSampleResultByIp(ip, sampleTime);
+        tenant = NamespaceUtil.processNamespaceParameter(tenant);
+        ConfigListenerInfo listenerInfo = configListenerStateDelegate.getListenerStateByIp(ip, tenant, false);
         GroupkeyListenserStatus gls = new GroupkeyListenserStatus();
         gls.setCollectStatus(200);
         Map<String, String> configMd5Status = new HashMap<>(100);
-        if (collectSampleResult.getLisentersGroupkeyStatus() == null) {
+        if (listenerInfo == null || listenerInfo.getListenersStatus() == null) {
             return gls;
         }
-        Map<String, String> status = collectSampleResult.getLisentersGroupkeyStatus();
-        tenant = NamespaceUtil.processNamespaceParameter(tenant);
+        Map<String, String> status = listenerInfo.getListenersStatus();
         for (Map.Entry<String, String> config : status.entrySet()) {
             if (!StringUtils.isBlank(tenant) && config.getKey().contains(tenant)) {
                 configMd5Status.put(config.getKey(), config.getValue());

@@ -27,8 +27,9 @@ import com.alibaba.nacos.plugin.auth.api.IdentityContext;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
 import com.alibaba.nacos.api.common.ApiType;
 import com.alibaba.nacos.plugin.auth.exception.AccessException;
+import com.alibaba.nacos.auth.config.NacosAuthConfig;
+import com.alibaba.nacos.auth.config.NacosAuthConfigHolder;
 import com.alibaba.nacos.plugin.auth.impl.authenticate.IAuthenticationManager;
-import com.alibaba.nacos.plugin.auth.impl.configuration.AuthConfigs;
 import com.alibaba.nacos.plugin.auth.impl.constant.AuthConstants;
 import com.alibaba.nacos.plugin.auth.impl.constant.AuthSystemTypes;
 import com.alibaba.nacos.plugin.auth.impl.persistence.RoleInfo;
@@ -68,14 +69,12 @@ public class LegacyAuthUserController {
 
     private final NacosUserService userDetailsService;
     private final NacosRoleService roleService;
-    private final AuthConfigs authConfigs;
     private final IAuthenticationManager iAuthenticationManager;
 
     public LegacyAuthUserController(NacosUserService userDetailsService, NacosRoleService roleService,
-            AuthConfigs authConfigs, IAuthenticationManager iAuthenticationManager) {
+            IAuthenticationManager iAuthenticationManager) {
         this.userDetailsService = userDetailsService;
         this.roleService = roleService;
-        this.authConfigs = authConfigs;
         this.iAuthenticationManager = iAuthenticationManager;
     }
 
@@ -105,7 +104,7 @@ public class LegacyAuthUserController {
     @PostMapping("/admin")
     @Compatibility(apiType = ApiType.CONSOLE_API, alternatives = "POST ${contextPath:nacos}/v3/auth/user/admin")
     public Object createAdminUser(@RequestParam(required = false) String password) {
-        if (AuthSystemTypes.NACOS.name().equalsIgnoreCase(authConfigs.getNacosAuthSystemType())) {
+        if (AuthSystemTypes.NACOS.name().equalsIgnoreCase(getNacosAuthSystemType())) {
             if (iAuthenticationManager.hasGlobalAdminRole()) {
                 return RestResultUtils.failed(HttpStatus.CONFLICT.value(), "have admin user cannot use it");
             }
@@ -177,7 +176,10 @@ public class LegacyAuthUserController {
      */
     private boolean hasPermission(String username, HttpServletRequest request)
             throws HttpSessionRequiredException, AccessException {
-        if (!authConfigs.isAuthEnabled()) {
+        if (!isAuthEnabled()) {
+            return true;
+        }
+        if (isFromServerIdentity(request)) {
             return true;
         }
         IdentityContext identityContext = RequestContextHolder.getContext().getAuthContext().getIdentityContext();
@@ -196,6 +198,61 @@ public class LegacyAuthUserController {
             return true;
         }
         return user.getUserName().equals(username);
+    }
+
+    private NacosAuthConfig getServerAuthConfig() {
+        try {
+            NacosAuthConfig config = NacosAuthConfigHolder.getInstance()
+                    .getNacosAuthConfigByScope(ApiType.CONSOLE_API.name());
+            if (config != null) {
+                return config;
+            }
+            return NacosAuthConfigHolder.getInstance().getNacosAuthConfigByScope(ApiType.OPEN_API.name());
+        } catch (Throwable ignore) {
+            return null;
+        }
+    }
+
+    private boolean isAuthEnabled() {
+        try {
+            NacosAuthConfig serverAuthConfig = getServerAuthConfig();
+            if (serverAuthConfig != null) {
+                return serverAuthConfig.isAuthEnabled();
+            }
+            return NacosAuthConfigHolder.getInstance().isAnyAuthEnabled();
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
+    private String getNacosAuthSystemType() {
+        try {
+            NacosAuthConfig serverAuthConfig = getServerAuthConfig();
+            if (serverAuthConfig != null && StringUtils.isNotBlank(serverAuthConfig.getNacosAuthSystemType())) {
+                return serverAuthConfig.getNacosAuthSystemType();
+            }
+            String systemType = NacosAuthConfigHolder.getInstance().getNacosAuthSystemType();
+            if (StringUtils.isNotBlank(systemType)) {
+                return systemType;
+            }
+        } catch (Throwable ignore) {
+        }
+        return AuthSystemTypes.NACOS.name();
+    }
+
+    private boolean isFromServerIdentity(HttpServletRequest request) {
+        try {
+            NacosAuthConfig serverAuthConfig = getServerAuthConfig();
+            if (serverAuthConfig == null) {
+                return false;
+            }
+            String serverIdentityKey = serverAuthConfig.getServerIdentityKey();
+            String serverIdentityValue = serverAuthConfig.getServerIdentityValue();
+            return serverAuthConfig.isSupportServerIdentity() && StringUtils.isNotBlank(serverIdentityKey)
+                    && serverIdentityValue.equals(request.getHeader(serverIdentityKey));
+        } catch (Throwable ignore) {
+            return false;
+        }
     }
 
     /**
